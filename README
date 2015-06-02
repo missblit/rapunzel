@@ -15,10 +15,11 @@ Example program:
     #include "fcgi_connection_manager.h"
     int main() {
         fcgi::connection_manager fcgi;
+        unsigned count = 0;
         while(true) {
             fcgi::request r = fcgi.get_request();
             r << "Content-type: text/html; charset=UTF-8\r\n\r\n"
                  "<!DOCTYPE html>\n"
-                 "<p>Hello, World!</p>";
+                 "<p>Hello, visitor number " << ++count << </p>";
         }
     }
