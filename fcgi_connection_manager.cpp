@@ -36,6 +36,7 @@ void connection_manager::run() {
 		/* not really any good place to put the debug output at this point */
 		std::ofstream ofs("/tmp/rapunzel-output.txt");
         ofs << "Caught exception: " << e.what() << std::endl;
+        std::cout << "Caught exception: " << e.what() << std::endl;
     }
 }
 
