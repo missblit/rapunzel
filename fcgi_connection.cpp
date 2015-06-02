@@ -61,7 +61,7 @@ template<> void connection::type_handler<TYPE::STDERR>
 
 /** Stub for DATA */
 template<> void connection::type_handler<TYPE::DATA>
-(boost::asio::yield_context, record_header){
+(boost::asio::yield_context yield, record_header r){
     /* read the message contents into a vector and turn it into a string*/
     std::vector<uint8_t> v(r.contentLength + r.paddingLength);
     async_read(sock, boost::asio::buffer(v), yield);
@@ -72,20 +72,20 @@ template<> void connection::type_handler<TYPE::DATA>
 
 /** stub fore GET_VALUES */
 template<> void connection::type_handler<TYPE::GET_VALUES>
-(boost::asio::yield_context, record_header){
+(boost::asio::yield_context yield, record_header r){
 	/* read the message contents into a vector and discard it*/
     std::vector<uint8_t> v(r.contentLength + r.paddingLength);
     async_read(sock, boost::asio::buffer(v), yield);
 	
 	/* return an empty set of values */
-	record_header r;
-	r.requestId = 0;
-	r.type = TYPE::GET_VALUES_RESULT;
-	r.contentLength = 0;
-	r.hton();
+	record_header rec;
+	rec.requestId = 0;
+	rec.type = TYPE::GET_VALUES_RESULT;
+	rec.contentLength = 0;
+	rec.hton();
 	{
 		std::lock_guard<std::mutex> lock(manager->write_mutex);
-		boost::asio::write(sock, make_asio_buffer(r));
+		boost::asio::write(sock, make_asio_buffer(rec));
 	}
 	start();
 };
