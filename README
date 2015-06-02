@@ -1,4 +1,24 @@
 Rapunzel is a FastCGI library written in C++ using boost::asio and threads.
-It's not exactly production quality, but can get "Hello, World!" up in the browser.
+
+The design goal was being able to be used without using callback-based
+programming on the user's end.
+
+To facilitate this it uses boost::asio and threads to make read operations
+non-blocking.
+
+It's still not finished so don't use it to run your mega-bank or anything like
+that.
 
 
+Example program:
+
+    #include "fcgi_connection_manager.h"
+    int main() {
+        fcgi::connection_manager fcgi;
+        while(true) {
+            fcgi::request r = fcgi.get_request();
+            r << "Content-type: text/html; charset=UTF-8\r\n\r\n"
+                 "<!DOCTYPE html>\n"
+                 "<p>Hello, World!</p>";
+        }
+    }
