@@ -1,14 +1,19 @@
 CXX = g++
 CXXFLAGS = -std=c++14 -Wall -pthread -Wfatal-errors
 LDFLAGS = -lboost_system -lboost_coroutine -lstdc++
-.PHONY: deploy
-#TODO - dependencies are all f-d up
-default:
-	make clean
-	make deploy
-main: fcgi_connection.o fcgi_connection_manager.o asio_util.o util.o \
-      fcgi_request.o
 
+OBJS = asio_util.o fcgi_connection_manager.o fcgi_connection.o \
+       fcgi_request.o util.o
+asio_util.cpp: asio_util.h
+fcgi_connection_manager.cpp: fcgi_connection_manager.h
+
+fcgi_connection.cpp: fcgi_connection_manager.h fcgi_connection.h
+fcgi_request.cpp: fcgi_request.h fcgi_connection.h
+util.cpp: util.h
+fcgi_connection_manager.h: fcgi_connection.h
+fcgi_connection.h: fcgi_types.h fcgi_request.h util.h
+rapunzel.a: ${OBJS}
+	ar rs $@ $^ 
 deploy: main
 	sudo touch /tmp/rapunzel-output
 	sudo rm /tmp/rapunzel-output
