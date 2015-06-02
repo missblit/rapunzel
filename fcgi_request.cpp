@@ -38,7 +38,7 @@ void request::write(std::string message) {
 		throw std::runtime_error("Attempt to write to closed stdout stream");
 		return;
 	}
-	/* harmless to write an empty message, but if it was a FCGI message it would
+	/* harmless to output an empty string, but if it was a FCGI message it would
 	 * close the stream */
 	if(message == "")
 		return;

@@ -47,29 +47,50 @@ template<> void connection::type_handler<TYPE::STDIN>
     start();
 };
 
+/** This message type should never be received */
 template<> void connection::type_handler<TYPE::STDOUT>
 (boost::asio::yield_context, record_header){
-	/* might not make sense to recieve STDOUT, STDERR messages */
 	throw std::runtime_error("Unhandled Type STDOUT");
 };
 
+/** This message type should never be received */
 template<> void connection::type_handler<TYPE::STDERR>
 (boost::asio::yield_context, record_header){
 	throw std::runtime_error("Unhandled Type STDERR");
 };
 
-/* FIXME: these few functions need at least stubbing
- * so the message stream doesn't get corrupted */
+/** Stub for DATA */
 template<> void connection::type_handler<TYPE::DATA>
 (boost::asio::yield_context, record_header){
-	throw std::runtime_error("Unhandled Type DATA");
+    /* read the message contents into a vector and turn it into a string*/
+    std::vector<uint8_t> v(r.contentLength + r.paddingLength);
+    async_read(sock, boost::asio::buffer(v), yield);
+	std::string s(begin(v),end(v));
+	
+	start();
 };
 
+/** stub fore GET_VALUES */
 template<> void connection::type_handler<TYPE::GET_VALUES>
 (boost::asio::yield_context, record_header){
-	throw std::runtime_error("Unhandled Type GET VALUES");
+	/* read the message contents into a vector and discard it*/
+    std::vector<uint8_t> v(r.contentLength + r.paddingLength);
+    async_read(sock, boost::asio::buffer(v), yield);
+	
+	/* return an empty set of values */
+	record_header r;
+	r.requestId = 0;
+	r.type = TYPE::GET_VALUES_RESULT;
+	r.contentLength = 0;
+	r.hton();
+	{
+		std::lock_guard<std::mutex> lock(manager->write_mutex);
+		boost::asio::write(sock, make_asio_buffer(r));
+	}
+	start();
 };
 
+/** This message type should never be received */
 template<> void connection::type_handler<TYPE::GET_VALUES_RESULT>
 (boost::asio::yield_context, record_header){
 	throw std::runtime_error("Unhandled Type GET VALUES RESULT");
@@ -87,6 +108,7 @@ void connection::type_handler<TYPE::BEGIN_REQUEST>
 	incoming[r.requestId] = {r.requestId, keep_conn, this};
 	start();
 }
+
 
 void connection::make_pending(uint16_t id) {
 	auto it = incoming.find(id);
