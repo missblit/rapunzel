@@ -15,15 +15,17 @@ class request;
 /** std::streambuf interface to the request */
 class request_streambuf : public std::streambuf {
 private:
-	request &r;
+	request *r;
 protected:
 	virtual std::streamsize xsputn( const char_type* s, std::streamsize count );
 public:
-	request_streambuf(request &r);
+	request_streambuf(request *r);
 };
 
 class request : public std::ostream {
 private:
+	std::unique_ptr<request_streambuf> my_streambuf;
+	
 	/** The FCGI request ID for this request */
 	uint16_t id;
 	/** Whether or not to close the connection when this request is done */

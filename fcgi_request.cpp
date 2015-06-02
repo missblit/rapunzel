@@ -7,18 +7,29 @@ namespace fcgi {
 request::request() : id(0), keep_conn(1), conn(nullptr) {}
 
 request::request(uint16_t id, bool keep_conn, connection *conn)
-: id(id), keep_conn(keep_conn), conn(conn),
-  is_closed(false), stdout_open(true) {};
+: my_streambuf(std::make_unique<request_streambuf>(this)),
+  id(id), keep_conn(keep_conn), conn(conn), 
+  is_closed(false), stdout_open(true) {
+	  rdbuf(my_streambuf.get());
+};
 
 request::request(request &&r)
-: id(r.id), keep_conn(r.keep_conn), conn(r.conn), params(std::move(r.params)),
+: my_streambuf(std::move(r.my_streambuf)),
+ id(r.id), keep_conn(r.keep_conn), conn(r.conn),
+ params(std::move(r.params)),
   is_closed(false), stdout_open(true) {
+	r.rdbuf(nullptr);
+	rdbuf(my_streambuf.get());
 	r.stdout_open = false;
 	r.is_closed = true;
 	r.conn = nullptr;
 }
  
 request &request::operator=(request &&r) {
+	my_streambuf = std::move(r.my_streambuf);
+	rdbuf(my_streambuf.get());
+	r.rdbuf(nullptr);
+	
 	id = r.id;
 	keep_conn = r.keep_conn;
 	conn = r.conn;
@@ -65,13 +76,13 @@ request::~request() {
 	close();
 }
 
-request_streambuf::request_streambuf(request &r) : r(r) {}	
+request_streambuf::request_streambuf(request *r) : r(r) {}	
 	
 std::streamsize request_streambuf::xsputn(const char_type* s,
                                           std::streamsize count )
 {
 	std::string str(s, s+count);
-	r.write(str);
+	r->write(str);
 	return count;
 }
 
