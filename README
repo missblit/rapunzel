@@ -1,3 +1,4 @@
-Rapunzel is a C++ web library.
+Rapunzel is a FastCGI library written in C++ using boost::asio and threads.
+It's not exactly production quality, but can get "Hello, World!" up in the browser.
 
 
