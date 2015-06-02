@@ -7,12 +7,11 @@ OBJS = asio_util.o fcgi_connection_manager.o fcgi_connection.o \
 # Default target
 build: rapunzel.a
 # Dependencies
-asio_util.cpp: asio_util.h
-fcgi_connection_manager.cpp: fcgi_connection_manager.h
-
-fcgi_connection.cpp: fcgi_connection_manager.h fcgi_connection.h
-fcgi_request.cpp: fcgi_request.h fcgi_connection.h
-util.cpp: util.h
+asio_util.o: asio_util.h
+fcgi_connection_manager.o: fcgi_connection_manager.h
+fcgi_connection.o: fcgi_connection_manager.h fcgi_connection.h
+fcgi_request.o: fcgi_request.h fcgi_connection.h
+util.o: util.h
 fcgi_connection_manager.h: fcgi_connection.h
 fcgi_connection.h: fcgi_types.h fcgi_request.h util.h
 # Rules
