@@ -64,17 +64,21 @@ request::~request() {
 	close();
 }
 
+std::streamsize request::xsputn(const char_type* s,
+								std::streamsize count )
+{
+	std::string str(s, s+count);
+	write(str);
+	return count;
+}
+
+
 const std::map<std::string, std::string> &request::parameters() const {
 	return params;
 }
 
 const std::string &request::stdin() const {
 	return stdin_buff;
-}
-
-request &operator<<(request &r, const std::string &s) {
-	r.write(s);
-	return r;
 }
 
 } //namespace fcgi

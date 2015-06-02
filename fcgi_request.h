@@ -10,7 +10,11 @@
 namespace fcgi {
 	
 class connection;
-class request {
+class request : public std::streambuf {
+protected:
+	/** needed to implement streambuf */
+	virtual std::streamsize xsputn( const char_type* s, std::streamsize count );
+private:
 	/** The FCGI request ID for this request */
 	uint16_t id;
 	/** Whether or not to close the connection when this request is done */
@@ -60,13 +64,6 @@ public:
 	/** Get the connection's standard input as a string */
 	const std::string &stdin() const;
 };
-
-/** Write a string to stdout
- * Fixme: make request a proper stream type
- * @param s the string to write out
- * @param r the request to write to
- */
-request &operator<<(request &r, const std::string &s);
 
 } //namespace fcgi
 
