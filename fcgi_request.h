@@ -14,6 +14,7 @@ class request;
 
 /** std::streambuf interface to the request */
 class request_streambuf : public std::streambuf {
+	friend request;
 private:
 	request *r;
 protected:
@@ -23,11 +24,11 @@ public:
 };
 
 class request : public std::ostream {
+	friend request_streambuf;
 private:
-	std::unique_ptr<request_streambuf> my_streambuf;
-	
 	/** The FCGI request ID for this request */
 	uint16_t id;
+	std::unique_ptr<request_streambuf> my_streambuf;
 	/** Whether or not to close the connection when this request is done */
 	bool keep_conn;
 	/** Pointer to the connection managing this request */

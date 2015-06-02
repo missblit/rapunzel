@@ -7,19 +7,21 @@ namespace fcgi {
 request::request() : id(0), keep_conn(1), conn(nullptr) {}
 
 request::request(uint16_t id, bool keep_conn, connection *conn)
-: my_streambuf(std::make_unique<request_streambuf>(this)),
-  id(id), keep_conn(keep_conn), conn(conn), 
+: id(id), my_streambuf(std::make_unique<request_streambuf>(this)),
+  keep_conn(keep_conn), conn(conn), 
   is_closed(false), stdout_open(true) {
 	  rdbuf(my_streambuf.get());
 };
 
 request::request(request &&r)
-: my_streambuf(std::move(r.my_streambuf)),
- id(r.id), keep_conn(r.keep_conn), conn(r.conn),
+: id(r.id), my_streambuf(std::move(r.my_streambuf)),
+  keep_conn(r.keep_conn), conn(r.conn),
  params(std::move(r.params)),
   is_closed(false), stdout_open(true) {
 	r.rdbuf(nullptr);
 	rdbuf(my_streambuf.get());
+	if(my_streambuf)
+		my_streambuf->r = this;
 	r.stdout_open = false;
 	r.is_closed = true;
 	r.conn = nullptr;
@@ -29,6 +31,8 @@ request &request::operator=(request &&r) {
 	my_streambuf = std::move(r.my_streambuf);
 	rdbuf(my_streambuf.get());
 	r.rdbuf(nullptr);
+	if(my_streambuf)
+		my_streambuf->r = this;
 	
 	id = r.id;
 	keep_conn = r.keep_conn;
@@ -82,6 +86,9 @@ std::streamsize request_streambuf::xsputn(const char_type* s,
                                           std::streamsize count )
 {
 	std::string str(s, s+count);
+	std::ofstream ofs("/tmp/rapunzel-output.txt");
+	ofs << "Writing: " << str << " ";
+	ofs << "to " << r->id << std::endl;
 	r->write(str);
 	return count;
 }
