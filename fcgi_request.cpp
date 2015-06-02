@@ -33,6 +33,7 @@ request &request::operator=(request &&r) {
 	return *this;
 }
 
+
 void request::write(std::string message) {
 	if(!stdout_open) {
 		throw std::runtime_error("Attempt to write to closed stdout stream");
@@ -64,11 +65,13 @@ request::~request() {
 	close();
 }
 
-std::streamsize request::xsputn(const char_type* s,
-								std::streamsize count )
+request_streambuf::request_streambuf(request &r) : r(r) {}	
+	
+std::streamsize request_streambuf::xsputn(const char_type* s,
+                                          std::streamsize count )
 {
 	std::string str(s, s+count);
-	write(str);
+	r.write(str);
 	return count;
 }
 

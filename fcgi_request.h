@@ -10,10 +10,19 @@
 namespace fcgi {
 	
 class connection;
-class request : public std::streambuf {
+class request;
+
+/** std::streambuf interface to the request */
+class request_streambuf : public std::streambuf {
+private:
+	request &r;
 protected:
-	/** needed to implement streambuf */
 	virtual std::streamsize xsputn( const char_type* s, std::streamsize count );
+public:
+	request_streambuf(request &r);
+};
+
+class request : public std::ostream {
 private:
 	/** The FCGI request ID for this request */
 	uint16_t id;
