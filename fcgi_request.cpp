@@ -7,23 +7,26 @@ static std::mutex mmmm;
 namespace fcgi {
 	
 request::request()
-: id(0), keep_conn(1), conn(nullptr), is_closed(true), stdout_open(false)
+: id(0), my_streambuf(), keep_conn(1), conn(nullptr), params(), stdin_buff(),
+  is_closed(true), stdout_open(false), stdin_done(false), params_done(false)
 {
 }
 
 request::request(uint16_t id, bool keep_conn, connection *conn)
 : id(id), my_streambuf(std::make_unique<request_streambuf>(this)),
   keep_conn(keep_conn), conn(conn), 
-  is_closed(!conn), stdout_open(conn) {
+  is_closed(!conn), stdout_open(conn)
+{
 	  rdbuf(my_streambuf.get());
-
 };
 
 request::request(request &&r)
 : id(r.id), my_streambuf(std::move(r.my_streambuf)),
-  keep_conn(r.keep_conn), conn(r.conn),
- params(std::move(r.params)),
-  is_closed(r.is_closed), stdout_open(r.stdout_open) {
+  keep_conn(r.keep_conn), conn(r.conn), params(std::move(r.params)),
+  stdin_buff(std::move(r.stdin_buff)),
+  is_closed(r.is_closed), stdout_open(r.stdout_open), stdin_done(r.stdin_done),
+  params_done(r.params_done)
+{
 	if(my_streambuf)
 		my_streambuf->r = this;
 	r.rdbuf(nullptr);
@@ -35,19 +38,23 @@ request::request(request &&r)
 }
  
 request &request::operator=(request &&r) {
+	id = r.id;
 	my_streambuf = std::move(r.my_streambuf);
+	keep_conn = r.keep_conn;
+	conn = r.conn;
+	params = std::move(r.params);
+	stdin_buff = std::move(r.stdin_buff);
+	is_closed = r.is_closed;
+	stdout_open = r.stdout_open;
+	stdin_done = r.stdin_done;
+	params_done = r.params_done;
+	
 	if(my_streambuf)
 		my_streambuf->r = this;
 	rdbuf(my_streambuf.get());
 	r.rdbuf(nullptr);
 	
-	id = r.id;
-	keep_conn = r.keep_conn;
-	conn = r.conn;
-	is_closed = r.is_closed;
-	stdout_open = r.stdout_open;
-	params = std::move(r.params);
-	
+	r.id = 0;
 	r.stdout_open = false;
 	r.is_closed = true;
 	r.conn = nullptr;
