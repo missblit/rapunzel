@@ -19,7 +19,12 @@ boost::asio::generic::stream_protocol socket_protocol(int sock);
 template <typename POD>
 auto make_asio_buffer(POD &p) { return boost::asio::buffer(&p, sizeof(p)); }
 
+/** HTML form decode a strung */
 std::string decode_querystring_field(const std::string &s);
+
+/** Takes a query string, breaks it into fields, URL decodes those fields
+ * and returns the result as a map
+ */
 std::map<std::string,std::string> decode_querystring(const std::string &s);
 
 #endif
