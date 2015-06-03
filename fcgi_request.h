@@ -73,6 +73,8 @@ public:
 	void close();
 	/** Get the connections parameters */
 	const std::map<std::string, std::string> &parameters() const;
+	/** Get a single connection parameter */
+	std::string parameter(const std::string &key) const;
 	/** Get the connection's standard input as a string */
 	const std::string &stdin() const;
 };

@@ -1,6 +1,8 @@
 #ifndef ASIO_UTIL_H
 #define ASIO_UTIL_H
 
+#include <string>
+#include <map>
 #include <boost/asio.hpp>
 
 /**
@@ -16,5 +18,8 @@ boost::asio::generic::stream_protocol socket_protocol(int sock);
  */
 template <typename POD>
 auto make_asio_buffer(POD &p) { return boost::asio::buffer(&p, sizeof(p)); }
+
+std::string decode_querystring_field(const std::string &s);
+std::map<std::string,std::string> decode_querystring(const std::string &s);
 
 #endif

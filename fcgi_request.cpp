@@ -2,8 +2,6 @@
 #include "fcgi_request.h"
 #include "fcgi_connection.h"
 
-static std::mutex mmmm;
-
 namespace fcgi {
 	
 request::request()
@@ -105,6 +103,12 @@ std::streamsize request_streambuf::xsputn(const char_type* s,
 
 const std::map<std::string, std::string> &request::parameters() const {
 	return params;
+}
+
+std::string request::parameter(const std::string &key) const {
+	auto it = params.find(key);
+	if(it == params.end()) return "";
+	return it->second;
 }
 
 const std::string &request::stdin() const {
