@@ -28,7 +28,8 @@ Example program:
                 r << "<p>Here is a list of query string key-value pairs!\n"
                     " but watch out for XSS, I'm not sanitizing them!<br>\n";
                 for(auto &p : qs)
-                    r << "\"" << p.first << "\" -> \"" << p.second << "\"<br>\n";
+                    r << "\"" << p.first << "\" -> \""
+                      << p.second << "\"<br>\n";
                 r << "</p>\n";
             }
         }
