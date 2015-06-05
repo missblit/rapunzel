@@ -157,9 +157,9 @@ void connection::type_handler<TYPE::PARAMS>
 				uint8_t length_buff[3] = {0,0,0};
 				async_read(sock, boost::asio::buffer(length_buff, 3), yield);
 				target =   (length_b0 & 0x7F) << 24
-						 | length_buff[0] << 16
-						 | length_buff[1] << 8
-						 | length_buff[2] << 0;
+				         | length_buff[0] << 16
+				         | length_buff[1] << 8
+				         | length_buff[2] << 0;
 				bytes_pending -= 4;
 			}
 		}
