@@ -1,8 +1,10 @@
 #include "fcgi_connection_manager.h"
+#include "rapunzel_util.h"
 #include <typeinfo>
 #include <chrono>
 #include <thread>
 #include <stdexcept>
+#include <iostream>
 
 namespace fcgi {
 	

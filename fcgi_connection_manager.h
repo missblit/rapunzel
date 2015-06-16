@@ -4,6 +4,7 @@
 #include <thread>
 #include <condition_variable>
 #include "fcgi_connection.h"
+#include "rapunzel_util.h"
 
 namespace fcgi {
     /**

@@ -5,7 +5,6 @@
 #include <mutex>
 #include <boost/asio.hpp>
 #include <boost/asio/spawn.hpp>
-#include "util.h"
 #include "fcgi_types.h"
 #include "fcgi_request.h"
 
