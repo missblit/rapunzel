@@ -143,19 +143,23 @@ void connection::type_handler<TYPE::PARAMS>
 		 * length field
 		 * see FCGI spec */
 		uint8_t length_b0;
-		uint32_t length, name_length, value_length;		
+		uint32_t name_length, value_length;		
 		std::array<std::reference_wrapper<uint32_t>, 2> lengths = {name_length,
 			                                                       value_length};
 		for(uint32_t &target : lengths) {
 			auto b0_buff = boost::asio::buffer(&length_b0, 1);
-			async_read(sock, b0_buff, yield);	
+			async_read(sock, b0_buff, yield);
 			if(length_b0 < 128) {
 				target = length_b0;
 				bytes_pending -= 1;
 			}
 			else {
-				async_read(sock, boost::asio::buffer(&length, 3), yield);
-				target = length_b0 << 24 | length;
+				uint8_t length_buff[3] = {0,0,0};
+				async_read(sock, boost::asio::buffer(length_buff, 3), yield);
+				target =   (length_b0 & 0x7F) << 24
+				         | length_buff[0] << 16
+				         | length_buff[1] << 8
+				         | length_buff[2] << 0;
 				bytes_pending -= 4;
 			}
 		}
@@ -165,6 +169,7 @@ void connection::type_handler<TYPE::PARAMS>
 		buffers.push_back(boost::asio::buffer(name));
 		buffers.push_back(boost::asio::buffer(value));
 		async_read(sock, buffers, yield);
+
 		/* inser the name value pair */
 		std::string  name_str(begin(name),  end(name)),
 	                value_str(begin(value), end(value));

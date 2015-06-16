@@ -1,4 +1,3 @@
-CXX = g++
 CXXFLAGS = -std=c++14 -Wall -Wextra -pthread -g -O0
 LDFLAGS = -lboost_system -lboost_coroutine -lstdc++
 OBJS = rapunzel_util.o fcgi_connection_manager.o fcgi_connection.o \
