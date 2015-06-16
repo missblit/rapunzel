@@ -90,8 +90,8 @@ request::~request() {
 	close();
 }
 
-request_streambuf::request_streambuf(request *r) : r(r) {}	
-	
+request_streambuf::request_streambuf(request *r) : r(r) {}
+
 std::streamsize request_streambuf::xsputn(const char_type* s,
                                           std::streamsize count )
 {

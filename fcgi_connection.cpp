@@ -13,25 +13,25 @@ connection::connection(boost::asio::generic::stream_protocol::socket &&sock,
 }
 
 void connection::start() {
-    boost::asio::spawn(io(), std::bind(&connection::read_header,
-                                       this, std::placeholders::_1));
+	boost::asio::spawn(io(), std::bind(&connection::read_header,
+	                   this, std::placeholders::_1));
 }
 
 template<> void connection::type_handler<TYPE::ABORT_REQUEST>
-(boost::asio::yield_context, record_header){
+(boost::asio::yield_context, record_header) {
 	throw std::runtime_error("Unhandled Type ABORT");
 };
 
 template<> void connection::type_handler<TYPE::END_REQUEST>
-(boost::asio::yield_context, record_header){
+(boost::asio::yield_context, record_header) {
 	throw std::runtime_error("Unhandled Type END");
 };
 
 template<> void connection::type_handler<TYPE::STDIN>
 (boost::asio::yield_context yield, record_header r) {
-    /* read the message contents into a vector and turn it into a string*/
-    std::vector<uint8_t> v(r.contentLength + r.paddingLength);
-    async_read(sock, boost::asio::buffer(v), yield);
+	/* read the message contents into a vector and turn it into a string*/
+	std::vector<uint8_t> v(r.contentLength + r.paddingLength);
+	async_read(sock, boost::asio::buffer(v), yield);
 	std::string s(begin(v),end(v));
 	
 	/* if the string isn't empty, append it to stdin */
@@ -44,27 +44,27 @@ template<> void connection::type_handler<TYPE::STDIN>
 	 * fixme: remove duplicate code w/ params */
 	if(incoming[r.requestId].stdin_done && incoming[r.requestId].params_done)
 		make_pending(r.requestId);
-    start();
+	start();
 };
 
 /** This message type should never be received */
 template<> void connection::type_handler<TYPE::STDOUT>
-(boost::asio::yield_context, record_header){
+(boost::asio::yield_context, record_header) {
 	throw std::runtime_error("Unhandled Type STDOUT");
 };
 
 /** This message type should never be received */
 template<> void connection::type_handler<TYPE::STDERR>
-(boost::asio::yield_context, record_header){
+(boost::asio::yield_context, record_header) {
 	throw std::runtime_error("Unhandled Type STDERR");
 };
 
 /** Stub for DATA */
 template<> void connection::type_handler<TYPE::DATA>
-(boost::asio::yield_context yield, record_header r){
-    /* read the message contents into a vector and turn it into a string*/
-    std::vector<uint8_t> v(r.contentLength + r.paddingLength);
-    async_read(sock, boost::asio::buffer(v), yield);
+(boost::asio::yield_context yield, record_header r) {
+	/* read the message contents into a vector and turn it into a string*/
+	std::vector<uint8_t> v(r.contentLength + r.paddingLength);
+	async_read(sock, boost::asio::buffer(v), yield);
 	std::string s(begin(v),end(v));
 	
 	start();
@@ -103,8 +103,8 @@ void connection::type_handler<TYPE::BEGIN_REQUEST>
 	begin_request_body b;
 	async_read(sock, make_asio_buffer(b), yield);
 	b.ntoh();
-    bool keep_conn = b.flags & KEEP_CONN;
-    /* add the request that began as a new incoming request */
+	bool keep_conn = b.flags & KEEP_CONN;
+	/* add the request that began as a new incoming request */
 	incoming[r.requestId] = {r.requestId, keep_conn, this};
 	start();
 }
@@ -209,12 +209,12 @@ void connection::read_header(boost::asio::yield_context yield) {
 	};
 	
 	record_header r;
-    boost::system::error_code ec;
+	boost::system::error_code ec;
 	async_read(sock, boost::asio::buffer(&r, sizeof(r)), yield[ec]);
-    if(ec.value()) {
-        sock.close();
-        return;
-    }
+	if(ec.value()) {
+		sock.close();
+		return;
+	}
 	r.ntoh();
 	
 	const int type_int = static_cast<int>(r.type);
@@ -233,30 +233,28 @@ boost::asio::io_service &connection::io() {
 }
 
 void connection::write(uint16_t id, std::string message) {
-    const char *data = message.c_str();
-    auto remaining = message.size();
-    std::lock_guard<std::mutex> lock(manager->write_mutex);
-    //write the message in blocks of 65535 (the maximum length in the protocol)
-    //do-while instead of while so that zero length messages will get through
-    do {
-        auto message_size = std::min(static_cast<std::size_t>(65535),
-                                     remaining);
-        remaining -= message_size;
-        
-        record_header r;
-        r.requestId = id;
-        r.type = TYPE::STDOUT;
-        r.contentLength = message_size;
-        r.hton();
-        
-        boost::asio::write(sock, make_asio_buffer(r));
-        //If the size is 0 then the following is unneeded
-        if(message.size()) {
-            auto buff = boost::asio::buffer(data, message_size);
-            boost::asio::write(sock, buff);
-            data += message_size;
-        }
-    } while(remaining);
+	const char *data = message.c_str();
+	auto remaining = message.size();
+	std::lock_guard<std::mutex> lock(manager->write_mutex);
+	//write the message in blocks of 65535 (the maximum length in the protocol)
+	//do-while instead of while so that zero length messages will get through
+	do {
+		auto message_size = std::min(static_cast<std::size_t>(65535),
+		                             remaining);
+		remaining -= message_size;
+		record_header r;
+		r.requestId = id;
+		r.type = TYPE::STDOUT;
+		r.contentLength = message_size;
+		r.hton();
+		boost::asio::write(sock, make_asio_buffer(r));
+		//If the size is 0 then the following is unneeded
+		if(message.size()) {
+			auto buff = boost::asio::buffer(data, message_size);
+			boost::asio::write(sock, buff);
+			data += message_size;
+		}
+	} while(remaining);
 }
 
 void connection::close(uint16_t id) {

@@ -84,7 +84,7 @@ public:
 	 * connection_manager as this connection's manager
 	 */
 	connection(boost::asio::generic::stream_protocol::socket &&,
-			   connection_manager *);
+	           connection_manager *);
 };
 
 }
